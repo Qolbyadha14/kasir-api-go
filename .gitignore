@@ -24,3 +24,9 @@ go.work.sum
 
 # OS files
 .DS_Store
+
+# Build results
+main
+kasir-api-go
+bin/
+dist/

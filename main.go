@@ -145,6 +145,10 @@ func main() {
 		json.NewEncoder(w).Encode(map[string]string{"error": "product not found"})
 	})
 
+	// Serve static files from the "public" directory
+	fs := http.FileServer(http.Dir("./public"))
+	http.Handle("/", fs)
+
 	fmt.Println("Starting server on port 8080")
 
 	err := http.ListenAndServe(":8080", nil)
