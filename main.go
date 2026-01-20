@@ -6,6 +6,28 @@ import (
 	"net/http"
 )
 
+type Product struct {
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Price int    `json:"price"`
+	Stock int    `json:"stock"`
+}
+
+var products = []Product{
+	{
+		ID:    1,
+		Name:  "Product 1",
+		Price: 10000,
+		Stock: 10,
+	},
+	{
+		ID:    2,
+		Name:  "Product 2",
+		Price: 20000,
+		Stock: 20,
+	},
+}
+
 func main() {
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		// Response JSON
