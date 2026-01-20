@@ -29,6 +29,7 @@ var products = []Product{
 }
 
 func main() {
+	// Get localhost:8080/health
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		// Response JSON
 		w.Header().Set("Content-Type", "application/json")
@@ -36,6 +37,28 @@ func main() {
 			"status":  "ok",
 			"message": "API Running",
 		})
+	})
+
+	// Handle /api/products (GET and POST)
+	http.HandleFunc("/api/products", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		// Method Post
+		if r.Method == http.MethodPost {
+			var product Product
+			if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				json.NewEncoder(w).Encode(map[string]string{"error": "invalid request body"})
+				return
+			}
+
+			products = append(products, product)
+			w.WriteHeader(http.StatusCreated)
+			json.NewEncoder(w).Encode(product)
+			return
+		}
+
+		json.NewEncoder(w).Encode(products)
 	})
 
 	fmt.Println("Starting server on port 8080")
