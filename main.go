@@ -124,6 +124,7 @@ func main() {
 				return
 			}
 
+			product.ID = id
 			if ok := updateProduct(id, product); ok {
 				w.WriteHeader(http.StatusOK)
 				json.NewEncoder(w).Encode(product)
