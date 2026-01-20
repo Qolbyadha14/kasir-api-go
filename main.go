@@ -30,6 +30,35 @@ var products = []Product{
 	},
 }
 
+func getProduct(id int) (Product, bool) {
+	for _, p := range products {
+		if p.ID == id {
+			return p, true
+		}
+	}
+	return Product{}, false
+}
+
+func updateProduct(id int, product Product) bool {
+	for i, p := range products {
+		if p.ID == id {
+			products[i] = product
+			return true
+		}
+	}
+	return false
+}
+
+func deleteProduct(id int) bool {
+	for i, p := range products {
+		if p.ID == id {
+			products = append(products[:i], products[i+1:]...)
+			return true
+		}
+	}
+	return false
+}
+
 func main() {
 	// Get localhost:8080/health
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -63,20 +92,50 @@ func main() {
 		json.NewEncoder(w).Encode(products)
 	})
 
-	// Handle /api/products/{id} (GET)
-	http.HandleFunc("/api/products/{id}", func(w http.ResponseWriter, r *http.Request) {
+	// Handle /api/products/{id} (GET, UPDATE AND DELETE)
+	http.HandleFunc("/api/products/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		idStr := strings.TrimPrefix(r.URL.Path, "/api/products/")
-		id, err := strconv.Atoi(idStr)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(map[string]string{"error": "invalid request body"})
+		if idStr == "" {
 			return
 		}
 
-		for _, p := range products {
-			if p.ID == id {
-				json.NewEncoder(w).Encode(p)
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"error": "invalid product id"})
+			return
+		}
+
+		// Method Get
+		if r.Method == http.MethodGet {
+			if product, found := getProduct(id); found {
+				json.NewEncoder(w).Encode(product)
+				return
+			}
+		}
+
+		// Method Put
+		if r.Method == http.MethodPut {
+			var product Product
+			if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				json.NewEncoder(w).Encode(map[string]string{"error": "invalid request body"})
+				return
+			}
+
+			if ok := updateProduct(id, product); ok {
+				w.WriteHeader(http.StatusOK)
+				json.NewEncoder(w).Encode(product)
+				return
+			}
+		}
+
+		// Method Delete
+		if r.Method == http.MethodDelete {
+			if ok := deleteProduct(id); ok {
+				w.WriteHeader(http.StatusOK)
+				json.NewEncoder(w).Encode(map[string]string{"message": "product deleted"})
 				return
 			}
 		}
