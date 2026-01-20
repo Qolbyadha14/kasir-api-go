@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
 type Product struct {
@@ -59,6 +61,28 @@ func main() {
 		}
 
 		json.NewEncoder(w).Encode(products)
+	})
+
+	// Handle /api/products/{id} (GET)
+	http.HandleFunc("/api/products/{id}", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		idStr := strings.TrimPrefix(r.URL.Path, "/api/products/")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"error": "invalid request body"})
+			return
+		}
+
+		for _, p := range products {
+			if p.ID == id {
+				json.NewEncoder(w).Encode(p)
+				return
+			}
+		}
+
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(map[string]string{"error": "product not found"})
 	})
 
 	fmt.Println("Starting server on port 8080")
