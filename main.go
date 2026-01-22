@@ -94,6 +94,26 @@ func getCategory(id int) (Category, bool) {
 	return Category{}, false
 }
 
+func updateCategory(id int, category Category) bool {
+	for i, c := range categories {
+		if c.ID == id {
+			categories[i] = category
+			return true
+		}
+	}
+	return false
+}
+
+func deleteCategory(id int) bool {
+	for i, c := range categories {
+		if c.ID == id {
+			categories = append(categories[:i], categories[i+1:]...)
+			return true
+		}
+	}
+	return false
+}
+
 // @Summary Health check
 // @Description Get the status of the API
 // @Tags health
@@ -191,6 +211,82 @@ func CreateCategoryHandler(w http.ResponseWriter, r *http.Request) {
 	categories = append(categories, category)
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(category)
+}
+
+// @Summary Get a category detail
+// @Description Get details of a category by ID
+// @Tags categories
+// @Produce json
+// @Param id path int true "Category ID"
+// @Success 200 {object} Category
+// @Failure 404 {object} map[string]string
+// @Router /api/categories/{id} [get]
+func GetCategoryDetailHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
+	id, _ := strconv.Atoi(idStr)
+
+	if category, found := getCategory(id); found {
+		json.NewEncoder(w).Encode(category)
+		return
+	}
+	w.WriteHeader(http.StatusNotFound)
+	json.NewEncoder(w).Encode(map[string]string{"error": "category not found"})
+}
+
+// @Summary Update a category
+// @Description Update an existing category's details
+// @Tags categories
+// @Accept json
+// @Produce json
+// @Param id path int true "Category ID"
+// @Param category body Category true "Category object"
+// @Success 200 {object} Category
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /api/categories/{id} [put]
+func UpdateCategoryHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
+	id, _ := strconv.Atoi(idStr)
+
+	var category Category
+	if err := json.NewDecoder(r.Body).Decode(&category); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "invalid request body"})
+		return
+	}
+
+	category.ID = id
+	if ok := updateCategory(id, category); ok {
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(category)
+		return
+	}
+	w.WriteHeader(http.StatusNotFound)
+	json.NewEncoder(w).Encode(map[string]string{"error": "category not found"})
+}
+
+// @Summary Delete a category
+// @Description Remove a category from the catalog
+// @Tags categories
+// @Produce json
+// @Param id path int true "Category ID"
+// @Success 200 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /api/categories/{id} [delete]
+func DeleteCategoryHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
+	id, _ := strconv.Atoi(idStr)
+
+	if ok := deleteCategory(id); ok {
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{"message": "category deleted"})
+		return
+	}
+	w.WriteHeader(http.StatusNotFound)
+	json.NewEncoder(w).Encode(map[string]string{"error": "category not found"})
 }
 
 // @Summary Get a product detail
@@ -323,6 +419,24 @@ func main() {
 		}
 	})
 
+	// Handle /api/categories/{id} (GET, UPDATE AND DELETE)
+	http.HandleFunc("/api/categories/", func(w http.ResponseWriter, r *http.Request) {
+		idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
+		if idStr == "" {
+			return
+		}
+		switch r.Method {
+		case http.MethodGet:
+			GetCategoryDetailHandler(w, r)
+		case http.MethodPut:
+			UpdateCategoryHandler(w, r)
+		case http.MethodDelete:
+			DeleteCategoryHandler(w, r)
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+	})
+
 	// Serve static files from the "public" directory
 	fs := http.FileServer(http.Dir("./public"))
 	http.Handle("/", fs)
@@ -330,7 +444,8 @@ func main() {
 	// Swagger UI
 	http.Handle("/swagger/", httpSwagger.WrapHandler)
 
-	fmt.Println("Starting server on port 8080")
+	fmt.Println("Starting server on http://localhost:8080")
+	fmt.Println("Swagger documentation at http://localhost:8080/swagger/index.html")
 
 	err := http.ListenAndServe(":8080", nil)
 
