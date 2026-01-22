@@ -166,6 +166,15 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validation: Category existence
+	if product.Category != nil {
+		if _, found := getCategory(product.Category.ID); !found {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"error": "category not found"})
+			return
+		}
+	}
+
 	products = append(products, product)
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(product)
@@ -331,6 +340,15 @@ func UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": "invalid request body"})
 		return
+	}
+
+	// Validation: Category existence
+	if product.Category != nil {
+		if _, found := getCategory(product.Category.ID); !found {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"error": "category not found"})
+			return
+		}
 	}
 
 	product.ID = id
