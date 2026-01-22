@@ -7,6 +7,12 @@ A minimalist Cashier API built with Go using only the standard library. This pro
 - Health check endpoint
 - CRUD operations for Products
 - In-memory data storage (restarts reset data)
+- Swagger API Documentation
+
+## API Documentation
+
+You can access the interactive API documentation (Swagger UI) when the server is running at:
+[http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
 
 ## Tech Stack
 
@@ -27,6 +33,19 @@ A minimalist Cashier API built with Go using only the standard library. This pro
    go run main.go
    ```
 3. The server will start on `http://localhost:8080`
+
+### Development (Swagger)
+
+To regenerate Swagger documentation after modifying handler annotations:
+
+1. Install `swag`:
+   ```bash
+   go install github.com/swaggo/swag/cmd/swag@latest
+   ```
+2. Generate documentation:
+   ```bash
+   swag init
+   ```
 
 ## API Endpoints
 
