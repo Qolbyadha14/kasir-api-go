@@ -36,6 +36,23 @@ info:
   title: Kasir API
   version: "1.0"
 paths:
+  /api/categories:
+    get:
+      consumes:
+      - application/json
+      description: Handle /api/categories (GET)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.Category'
+            type: array
+      summary: List categories
+      tags:
+      - categories
   /api/products:
     get:
       consumes:

@@ -139,6 +139,18 @@ func ProductsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(products)
 }
 
+// @Summary List categories
+// @Description Handle /api/categories (GET)
+// @Tags categories
+// @Accept json
+// @Produce json
+// @Success 200 {array} Category
+// @Router /api/categories [get]
+func CategoriesHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(categories)
+}
+
 // @Summary Get, Update or Delete a product
 // @Description Handle /api/products/{id} (GET, UPDATE AND DELETE)
 // @Tags products
@@ -228,6 +240,9 @@ func main() {
 
 	// Handle /api/products/{id} (GET, UPDATE AND DELETE)
 	http.HandleFunc("/api/products/", ProductDetailHandler)
+
+	// Handle /api/categories (GET)
+	http.HandleFunc("/api/categories", CategoriesHandler)
 
 	// Serve static files from the "public" directory
 	fs := http.FileServer(http.Dir("./public"))
