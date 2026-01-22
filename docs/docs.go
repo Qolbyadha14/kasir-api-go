@@ -26,17 +26,14 @@ const docTemplate = `{
     "paths": {
         "/api/categories": {
             "get": {
-                "description": "Handle /api/categories (GET)",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Get a list of all categories",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "categories"
                 ],
-                "summary": "List categories",
+                "summary": "List all categories",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -48,11 +45,82 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "description": "Add a new category to the catalog",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Create a new category",
+                "parameters": [
+                    {
+                        "description": "Category object",
+                        "name": "category",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.Category"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/main.Category"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
             }
         },
         "/api/products": {
             "get": {
-                "description": "Handle /api/products (GET and POST)",
+                "description": "Get a list of all products",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "List all products",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/main.Product"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Add a new product to the catalog",
                 "consumes": [
                     "application/json"
                 ],
@@ -62,7 +130,7 @@ const docTemplate = `{
                 "tags": [
                     "products"
                 ],
-                "summary": "Create or List products",
+                "summary": "Create a new product",
                 "parameters": [
                     {
                         "description": "Product object",
@@ -75,15 +143,6 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/main.Product"
-                            }
-                        }
-                    },
                     "201": {
                         "description": "Created",
                         "schema": {
@@ -98,50 +157,9 @@ const docTemplate = `{
                                 "type": "string"
                             }
                         }
-                    }
-                }
-            },
-            "post": {
-                "description": "Handle /api/products (GET and POST)",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "products"
-                ],
-                "summary": "Create or List products",
-                "parameters": [
-                    {
-                        "description": "Product object",
-                        "name": "product",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/main.Product"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/main.Product"
-                            }
-                        }
                     },
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/main.Product"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -154,17 +172,14 @@ const docTemplate = `{
         },
         "/api/products/{id}": {
             "get": {
-                "description": "Handle /api/products/{id} (GET, UPDATE AND DELETE)",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Get details of a product by ID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "products"
                 ],
-                "summary": "Get, Update or Delete a product",
+                "summary": "Get a product detail",
                 "parameters": [
                     {
                         "type": "integer",
@@ -172,33 +187,13 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": "Product object (for PUT)",
-                        "name": "product",
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/main.Product"
-                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/main.Product"
                         }
                     },
                     "404": {
@@ -213,7 +208,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Handle /api/products/{id} (GET, UPDATE AND DELETE)",
+                "description": "Update an existing product's details",
                 "consumes": [
                     "application/json"
                 ],
@@ -223,7 +218,7 @@ const docTemplate = `{
                 "tags": [
                     "products"
                 ],
-                "summary": "Get, Update or Delete a product",
+                "summary": "Update a product",
                 "parameters": [
                     {
                         "type": "integer",
@@ -233,9 +228,10 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Product object (for PUT)",
+                        "description": "Product object",
                         "name": "product",
                         "in": "body",
+                        "required": true,
                         "schema": {
                             "$ref": "#/definitions/main.Product"
                         }
@@ -245,10 +241,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/main.Product"
                         }
                     },
                     "400": {
@@ -272,17 +265,14 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Handle /api/products/{id} (GET, UPDATE AND DELETE)",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Remove a product from the catalog",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "products"
                 ],
-                "summary": "Get, Update or Delete a product",
+                "summary": "Delete a product",
                 "parameters": [
                     {
                         "type": "integer",
@@ -290,28 +280,11 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": "Product object (for PUT)",
-                        "name": "product",
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/main.Product"
-                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
