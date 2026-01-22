@@ -1,7 +1,18 @@
 basePath: /
 definitions:
+  main.Category:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
   main.Product:
     properties:
+      category:
+        $ref: '#/definitions/main.Category'
       id:
         type: integer
       name:
@@ -31,9 +42,10 @@ paths:
       - application/json
       description: Handle /api/products (GET and POST)
       parameters:
-      - description: Product object (for POST)
+      - description: Product object
         in: body
         name: product
+        required: true
         schema:
           $ref: '#/definitions/main.Product'
       produces:
@@ -63,9 +75,10 @@ paths:
       - application/json
       description: Handle /api/products (GET and POST)
       parameters:
-      - description: Product object (for POST)
+      - description: Product object
         in: body
         name: product
+        required: true
         schema:
           $ref: '#/definitions/main.Product'
       produces:

@@ -42,7 +42,14 @@ To regenerate Swagger documentation after modifying handler annotations:
    ```bash
    go install github.com/swaggo/swag/cmd/swag@latest
    ```
-2. Generate documentation:
+2. Ensure your Go bin directory is in your `PATH` (if `swag` command not found):
+   ```bash
+   # Add to PATH in .zshrc
+   echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.zshrc
+   # Reload configuration
+   source ~/.zshrc
+   ```
+3. Generate documentation:
    ```bash
    swag init
    ```

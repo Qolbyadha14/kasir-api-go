@@ -12,25 +12,47 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
+type Category struct {
+	ID          int    `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
 type Product struct {
-	ID    int    `json:"id"`
-	Name  string `json:"name"`
-	Price int    `json:"price"`
-	Stock int    `json:"stock"`
+	ID       int      `json:"id"`
+	Name     string   `json:"name"`
+	Price    int      `json:"price"`
+	Stock    int      `json:"stock"`
+	Category Category `json:"category"`
+}
+
+var categories = []Category{
+	{
+		ID:          1,
+		Name:        "Category 1",
+		Description: "Description 1",
+	},
+	{
+		ID:          2,
+		Name:        "Category 2",
+		Description: "Description 2",
+	},
 }
 
 var products = []Product{
 	{
-		ID:    1,
-		Name:  "Product 1",
-		Price: 10000,
-		Stock: 10,
+		ID:       1,
+		Name:     "Product 1",
+		Price:    10000,
+		Stock:    10,
+		Category: categories[0],
 	},
 	{
-		ID:    2,
-		Name:  "Product 2",
-		Price: 20000,
-		Stock: 20,
+		ID:       2,
+		Name:     "Product 2",
+		Price:    20000,
+		Stock:    20,
+		Category: categories[1],
 	},
 }
 
@@ -83,7 +105,7 @@ func HealthHandler(w http.ResponseWriter, r *http.Request) {
 // @Tags products
 // @Accept json
 // @Produce json
-// @Param product body Product false "Product object (for POST)"
+// @Param product body Product true "Product object"
 // @Success 201 {object} Product
 // @Success 200 {array} Product
 // @Failure 400 {object} map[string]string
@@ -98,6 +120,13 @@ func ProductsHandler(w http.ResponseWriter, r *http.Request) {
 		if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(map[string]string{"error": "invalid request body"})
+			return
+		}
+
+		// Validation: Duplicate ID
+		if _, found := getProduct(product.ID); found {
+			w.WriteHeader(http.StatusConflict)
+			json.NewEncoder(w).Encode(map[string]string{"error": "product id already exists"})
 			return
 		}
 

@@ -39,9 +39,10 @@ const docTemplate = `{
                 "summary": "Create or List products",
                 "parameters": [
                     {
-                        "description": "Product object (for POST)",
+                        "description": "Product object",
                         "name": "product",
                         "in": "body",
+                        "required": true,
                         "schema": {
                             "$ref": "#/definitions/main.Product"
                         }
@@ -88,9 +89,10 @@ const docTemplate = `{
                 "summary": "Create or List products",
                 "parameters": [
                     {
-                        "description": "Product object (for POST)",
+                        "description": "Product object",
                         "name": "product",
                         "in": "body",
+                        "required": true,
                         "schema": {
                             "$ref": "#/definitions/main.Product"
                         }
@@ -326,9 +328,26 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "main.Category": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "main.Product": {
             "type": "object",
             "properties": {
+                "category": {
+                    "$ref": "#/definitions/main.Category"
+                },
                 "id": {
                     "type": "integer"
                 },
