@@ -5,7 +5,8 @@ A minimalist Cashier API built with Go using only the standard library. This pro
 ## Features
 
 - Health check endpoint
-- CRUD operations for Products
+- CRUD operations for Products & Categories
+- Category existence validation for products
 - In-memory data storage (restarts reset data)
 - Swagger API Documentation
 
@@ -77,9 +78,15 @@ To regenerate Swagger documentation after modifying handler annotations:
     "id": 3,
     "name": "New Product",
     "price": 15000,
-    "stock": 50
+    "stock": 50,
+    "category": {
+      "id": 1,
+      "name": "Food",
+      "description": "Edible items"
+    }
   }
   ```
+- **Note:** `category` is optional (can be `null` or omitted). If provided, the `id` must exist in the categories list.
 
 #### Update Product
 `PUT /api/products/{id}`
@@ -94,6 +101,38 @@ To regenerate Swagger documentation after modifying handler annotations:
 
 #### Delete Product
 `DELETE /api/products/{id}`
+
+### Categories
+
+#### Get All Categories
+`GET /api/categories`
+
+#### Get Category by ID
+`GET /api/categories/{id}`
+
+#### Create Category
+`POST /api/categories`
+- **Body:**
+  ```json
+  {
+    "id": 1,
+    "name": "Food",
+    "description": "Edible items"
+  }
+  ```
+
+#### Update Category
+`PUT /api/categories/{id}`
+- **Body:**
+  ```json
+  {
+    "name": "Updated Category",
+    "description": "New description"
+  }
+  ```
+
+#### Delete Category
+`DELETE /api/categories/{id}`
 
 ## Deployment
 
