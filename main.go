@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"kasir-api-go/internal/models"
 	"net/http"
 	"strconv"
 	"strings"
@@ -12,21 +13,11 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
-type Category struct {
-	ID          int    `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-}
+// Use models from internal package
+type Category = models.Category
+type Product = models.Product
 
-type Product struct {
-	ID       int       `json:"id"`
-	Name     string    `json:"name"`
-	Price    int       `json:"price"`
-	Stock    int       `json:"stock"`
-	Category *Category `json:"category"`
-}
-
-var categories = []Category{
+var categories = []models.Category{
 	{
 		ID:          1,
 		Name:        "Category 1",
@@ -39,7 +30,7 @@ var categories = []Category{
 	},
 }
 
-var products = []Product{
+var products = []models.Product{
 	{
 		ID:       1,
 		Name:     "Product 1",
@@ -56,16 +47,16 @@ var products = []Product{
 	},
 }
 
-func getProduct(id int) (Product, bool) {
+func getProduct(id int) (models.Product, bool) {
 	for _, p := range products {
 		if p.ID == id {
 			return p, true
 		}
 	}
-	return Product{}, false
+	return models.Product{}, false
 }
 
-func updateProduct(id int, product Product) bool {
+func updateProduct(id int, product models.Product) bool {
 	for i, p := range products {
 		if p.ID == id {
 			products[i] = product
@@ -85,16 +76,16 @@ func deleteProduct(id int) bool {
 	return false
 }
 
-func getCategory(id int) (Category, bool) {
+func getCategory(id int) (models.Category, bool) {
 	for _, c := range categories {
 		if c.ID == id {
 			return c, true
 		}
 	}
-	return Category{}, false
+	return models.Category{}, false
 }
 
-func updateCategory(id int, category Category) bool {
+func updateCategory(id int, category models.Category) bool {
 	for i, c := range categories {
 		if c.ID == id {
 			categories[i] = category
@@ -133,7 +124,7 @@ func HealthHandler(w http.ResponseWriter, r *http.Request) {
 // @Description Get a list of all products
 // @Tags products
 // @Produce json
-// @Success 200 {array} Product
+// @Success 200 {array} models.Product
 // @Router /api/products [get]
 func GetProductsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -145,14 +136,14 @@ func GetProductsHandler(w http.ResponseWriter, r *http.Request) {
 // @Tags products
 // @Accept json
 // @Produce json
-// @Param product body Product true "Product object"
-// @Success 201 {object} Product
+// @Param product body models.Product true "Product object"
+// @Success 201 {object} models.Product
 // @Failure 400 {object} map[string]string
 // @Failure 409 {object} map[string]string
 // @Router /api/products [post]
 func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var product Product
+	var product models.Product
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": "invalid request body"})
@@ -184,7 +175,7 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
 // @Description Get a list of all categories
 // @Tags categories
 // @Produce json
-// @Success 200 {array} Category
+// @Success 200 {array} models.Category
 // @Router /api/categories [get]
 func GetCategoriesHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -196,14 +187,14 @@ func GetCategoriesHandler(w http.ResponseWriter, r *http.Request) {
 // @Tags categories
 // @Accept json
 // @Produce json
-// @Param category body Category true "Category object"
-// @Success 201 {object} Category
+// @Param category body models.Category true "Category object"
+// @Success 201 {object} models.Category
 // @Failure 400 {object} map[string]string
 // @Failure 409 {object} map[string]string
 // @Router /api/categories [post]
 func CreateCategoryHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var category Category
+	var category models.Category
 	if err := json.NewDecoder(r.Body).Decode(&category); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": "invalid request body"})
@@ -227,7 +218,7 @@ func CreateCategoryHandler(w http.ResponseWriter, r *http.Request) {
 // @Tags categories
 // @Produce json
 // @Param id path int true "Category ID"
-// @Success 200 {object} Category
+// @Success 200 {object} models.Category
 // @Failure 404 {object} map[string]string
 // @Router /api/categories/{id} [get]
 func GetCategoryDetailHandler(w http.ResponseWriter, r *http.Request) {
@@ -249,8 +240,8 @@ func GetCategoryDetailHandler(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Category ID"
-// @Param category body Category true "Category object"
-// @Success 200 {object} Category
+// @Param category body models.Category true "Category object"
+// @Success 200 {object} models.Category
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
 // @Router /api/categories/{id} [put]
@@ -259,7 +250,7 @@ func UpdateCategoryHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
 	id, _ := strconv.Atoi(idStr)
 
-	var category Category
+	var category models.Category
 	if err := json.NewDecoder(r.Body).Decode(&category); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": "invalid request body"})
@@ -303,7 +294,7 @@ func DeleteCategoryHandler(w http.ResponseWriter, r *http.Request) {
 // @Tags products
 // @Produce json
 // @Param id path int true "Product ID"
-// @Success 200 {object} Product
+// @Success 200 {object} models.Product
 // @Failure 404 {object} map[string]string
 // @Router /api/products/{id} [get]
 func GetProductDetailHandler(w http.ResponseWriter, r *http.Request) {
@@ -325,8 +316,8 @@ func GetProductDetailHandler(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Product ID"
-// @Param product body Product true "Product object"
-// @Success 200 {object} Product
+// @Param product body models.Product true "Product object"
+// @Success 200 {object} models.Product
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
 // @Router /api/products/{id} [put]
@@ -335,7 +326,7 @@ func UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/api/products/")
 	id, _ := strconv.Atoi(idStr)
 
-	var product Product
+	var product models.Product
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": "invalid request body"})
