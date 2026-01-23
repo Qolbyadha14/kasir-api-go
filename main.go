@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"kasir-api-go/internal/api"
 	"kasir-api-go/internal/models"
 	"net/http"
 	"strconv"
@@ -109,26 +110,20 @@ func deleteCategory(id int) bool {
 // @Description Get the status of the API
 // @Tags health
 // @Produce json
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} api.JSONResponse
 // @Router /health [get]
 func HealthHandler(w http.ResponseWriter, r *http.Request) {
-	// Response JSON
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"status":  "ok",
-		"message": "API Running",
-	})
+	api.SuccessResponse(w, http.StatusOK, "API Running", map[string]string{"status": "ok"})
 }
 
 // @Summary List all products
 // @Description Get a list of all products
 // @Tags products
 // @Produce json
-// @Success 200 {array} models.Product
+// @Success 200 {object} api.JSONResponse{data=[]models.Product}
 // @Router /api/products [get]
 func GetProductsHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(products)
+	api.SuccessResponse(w, http.StatusOK, "Success", products)
 }
 
 // @Summary Create a new product
@@ -137,49 +132,43 @@ func GetProductsHandler(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param product body models.Product true "Product object"
-// @Success 201 {object} models.Product
-// @Failure 400 {object} map[string]string
-// @Failure 409 {object} map[string]string
+// @Success 201 {object} api.JSONResponse{data=models.Product}
+// @Failure 400 {object} api.JSONResponse
+// @Failure 409 {object} api.JSONResponse
 // @Router /api/products [post]
 func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	var product models.Product
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "invalid request body"})
+		api.ErrorResponse(w, http.StatusBadRequest, "Invalid request body", err.Error())
 		return
 	}
 
 	// Validation: Duplicate ID
 	if _, found := getProduct(product.ID); found {
-		w.WriteHeader(http.StatusConflict)
-		json.NewEncoder(w).Encode(map[string]string{"error": "product id already exists"})
+		api.ErrorResponse(w, http.StatusConflict, "Product ID already exists", "Duplicate ID")
 		return
 	}
 
 	// Validation: Category existence
 	if product.Category != nil {
 		if _, found := getCategory(product.Category.ID); !found {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(map[string]string{"error": "category not found"})
+			api.ErrorResponse(w, http.StatusBadRequest, "Category not found", "Invalid Category ID")
 			return
 		}
 	}
 
 	products = append(products, product)
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(product)
+	api.SuccessResponse(w, http.StatusCreated, "Product created successfully", product)
 }
 
 // @Summary List all categories
 // @Description Get a list of all categories
 // @Tags categories
 // @Produce json
-// @Success 200 {array} models.Category
+// @Success 200 {object} api.JSONResponse{data=[]models.Category}
 // @Router /api/categories [get]
 func GetCategoriesHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(categories)
+	api.SuccessResponse(w, http.StatusOK, "Success", categories)
 }
 
 // @Summary Create a new category
@@ -188,29 +177,25 @@ func GetCategoriesHandler(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param category body models.Category true "Category object"
-// @Success 201 {object} models.Category
-// @Failure 400 {object} map[string]string
-// @Failure 409 {object} map[string]string
+// @Success 201 {object} api.JSONResponse{data=models.Category}
+// @Failure 400 {object} api.JSONResponse
+// @Failure 409 {object} api.JSONResponse
 // @Router /api/categories [post]
 func CreateCategoryHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	var category models.Category
 	if err := json.NewDecoder(r.Body).Decode(&category); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "invalid request body"})
+		api.ErrorResponse(w, http.StatusBadRequest, "Invalid request body", err.Error())
 		return
 	}
 
 	// Validation: Duplicate ID
 	if _, found := getCategory(category.ID); found {
-		w.WriteHeader(http.StatusConflict)
-		json.NewEncoder(w).Encode(map[string]string{"error": "category id already exists"})
+		api.ErrorResponse(w, http.StatusConflict, "Category ID already exists", "Duplicate ID")
 		return
 	}
 
 	categories = append(categories, category)
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(category)
+	api.SuccessResponse(w, http.StatusCreated, "Category created successfully", category)
 }
 
 // @Summary Get a category detail
@@ -218,20 +203,18 @@ func CreateCategoryHandler(w http.ResponseWriter, r *http.Request) {
 // @Tags categories
 // @Produce json
 // @Param id path int true "Category ID"
-// @Success 200 {object} models.Category
-// @Failure 404 {object} map[string]string
+// @Success 200 {object} api.JSONResponse{data=models.Category}
+// @Failure 404 {object} api.JSONResponse
 // @Router /api/categories/{id} [get]
 func GetCategoryDetailHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
 	id, _ := strconv.Atoi(idStr)
 
 	if category, found := getCategory(id); found {
-		json.NewEncoder(w).Encode(category)
+		api.SuccessResponse(w, http.StatusOK, "Success", category)
 		return
 	}
-	w.WriteHeader(http.StatusNotFound)
-	json.NewEncoder(w).Encode(map[string]string{"error": "category not found"})
+	api.ErrorResponse(w, http.StatusNotFound, "Category not found", "Category not found")
 }
 
 // @Summary Update a category
@@ -241,30 +224,26 @@ func GetCategoryDetailHandler(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param id path int true "Category ID"
 // @Param category body models.Category true "Category object"
-// @Success 200 {object} models.Category
-// @Failure 400 {object} map[string]string
-// @Failure 404 {object} map[string]string
+// @Success 200 {object} api.JSONResponse{data=models.Category}
+// @Failure 400 {object} api.JSONResponse
+// @Failure 404 {object} api.JSONResponse
 // @Router /api/categories/{id} [put]
 func UpdateCategoryHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
 	id, _ := strconv.Atoi(idStr)
 
 	var category models.Category
 	if err := json.NewDecoder(r.Body).Decode(&category); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "invalid request body"})
+		api.ErrorResponse(w, http.StatusBadRequest, "Invalid request body", err.Error())
 		return
 	}
 
 	category.ID = id
 	if ok := updateCategory(id, category); ok {
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(category)
+		api.SuccessResponse(w, http.StatusOK, "Category updated successfully", category)
 		return
 	}
-	w.WriteHeader(http.StatusNotFound)
-	json.NewEncoder(w).Encode(map[string]string{"error": "category not found"})
+	api.ErrorResponse(w, http.StatusNotFound, "Category not found", "Category not found")
 }
 
 // @Summary Delete a category
@@ -272,21 +251,18 @@ func UpdateCategoryHandler(w http.ResponseWriter, r *http.Request) {
 // @Tags categories
 // @Produce json
 // @Param id path int true "Category ID"
-// @Success 200 {object} map[string]string
-// @Failure 404 {object} map[string]string
+// @Success 200 {object} api.JSONResponse
+// @Failure 404 {object} api.JSONResponse
 // @Router /api/categories/{id} [delete]
 func DeleteCategoryHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
 	id, _ := strconv.Atoi(idStr)
 
 	if ok := deleteCategory(id); ok {
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]string{"message": "category deleted"})
+		api.SuccessResponse(w, http.StatusOK, "Category deleted successfully", nil)
 		return
 	}
-	w.WriteHeader(http.StatusNotFound)
-	json.NewEncoder(w).Encode(map[string]string{"error": "category not found"})
+	api.ErrorResponse(w, http.StatusNotFound, "Category not found", "Category not found")
 }
 
 // @Summary Get a product detail
@@ -294,20 +270,18 @@ func DeleteCategoryHandler(w http.ResponseWriter, r *http.Request) {
 // @Tags products
 // @Produce json
 // @Param id path int true "Product ID"
-// @Success 200 {object} models.Product
-// @Failure 404 {object} map[string]string
+// @Success 200 {object} api.JSONResponse{data=models.Product}
+// @Failure 404 {object} api.JSONResponse
 // @Router /api/products/{id} [get]
 func GetProductDetailHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	idStr := strings.TrimPrefix(r.URL.Path, "/api/products/")
 	id, _ := strconv.Atoi(idStr)
 
 	if product, found := getProduct(id); found {
-		json.NewEncoder(w).Encode(product)
+		api.SuccessResponse(w, http.StatusOK, "Success", product)
 		return
 	}
-	w.WriteHeader(http.StatusNotFound)
-	json.NewEncoder(w).Encode(map[string]string{"error": "product not found"})
+	api.ErrorResponse(w, http.StatusNotFound, "Product not found", "Product not found")
 }
 
 // @Summary Update a product
@@ -317,39 +291,34 @@ func GetProductDetailHandler(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param id path int true "Product ID"
 // @Param product body models.Product true "Product object"
-// @Success 200 {object} models.Product
-// @Failure 400 {object} map[string]string
-// @Failure 404 {object} map[string]string
+// @Success 200 {object} api.JSONResponse{data=models.Product}
+// @Failure 400 {object} api.JSONResponse
+// @Failure 404 {object} api.JSONResponse
 // @Router /api/products/{id} [put]
 func UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	idStr := strings.TrimPrefix(r.URL.Path, "/api/products/")
 	id, _ := strconv.Atoi(idStr)
 
 	var product models.Product
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "invalid request body"})
+		api.ErrorResponse(w, http.StatusBadRequest, "Invalid request body", err.Error())
 		return
 	}
 
 	// Validation: Category existence
 	if product.Category != nil {
 		if _, found := getCategory(product.Category.ID); !found {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(map[string]string{"error": "category not found"})
+			api.ErrorResponse(w, http.StatusBadRequest, "Category not found", "Invalid Category ID")
 			return
 		}
 	}
 
 	product.ID = id
 	if ok := updateProduct(id, product); ok {
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(product)
+		api.SuccessResponse(w, http.StatusOK, "Product updated successfully", product)
 		return
 	}
-	w.WriteHeader(http.StatusNotFound)
-	json.NewEncoder(w).Encode(map[string]string{"error": "product not found"})
+	api.ErrorResponse(w, http.StatusNotFound, "Product not found", "Product not found")
 }
 
 // @Summary Delete a product
@@ -357,21 +326,18 @@ func UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
 // @Tags products
 // @Produce json
 // @Param id path int true "Product ID"
-// @Success 200 {object} map[string]string
-// @Failure 404 {object} map[string]string
+// @Success 200 {object} api.JSONResponse
+// @Failure 404 {object} api.JSONResponse
 // @Router /api/products/{id} [delete]
 func DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	idStr := strings.TrimPrefix(r.URL.Path, "/api/products/")
 	id, _ := strconv.Atoi(idStr)
 
 	if ok := deleteProduct(id); ok {
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]string{"message": "product deleted"})
+		api.SuccessResponse(w, http.StatusOK, "Product deleted successfully", nil)
 		return
 	}
-	w.WriteHeader(http.StatusNotFound)
-	json.NewEncoder(w).Encode(map[string]string{"error": "product not found"})
+	api.ErrorResponse(w, http.StatusNotFound, "Product not found", "Product not found")
 }
 
 // @title Kasir API
