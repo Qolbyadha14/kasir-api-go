@@ -7,7 +7,7 @@ import (
 	"log"
 	"time"
 
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 func NewPostgres(cfg *config.DatabaseConfig) (*sql.DB, func() error, error) {
@@ -17,7 +17,7 @@ func NewPostgres(cfg *config.DatabaseConfig) (*sql.DB, func() error, error) {
 	}
 
 	// Open connection
-	db, err := sql.Open("postgres", cfg.URL)
+	db, err := sql.Open("pgx", cfg.URL)
 	if err != nil {
 		log.Println("failed to open database connection", err)
 		return nil, nil, err
