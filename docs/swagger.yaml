@@ -345,4 +345,7 @@ paths:
       summary: Health check
       tags:
       - health
+schemes:
+- http
+- https
 swagger: "2.0"

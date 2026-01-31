@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"kasir-api-go/docs"
 	"kasir-api-go/internal/config"
 	"kasir-api-go/internal/database"
 	"kasir-api-go/internal/handler"
@@ -30,6 +31,7 @@ import (
 
 // @host localhost:8080
 // @BasePath /
+// @schemes http https
 func main() {
 	// Load configuration
 	cfg := config.GetConfig()
@@ -49,6 +51,11 @@ func main() {
 	// Repositories
 	categoryRepo := repository.NewPostgresCategoryRepository(db)
 	productRepo := repository.NewPostgresProductRepository(db)
+
+	// Update swagger info host dynamically
+	if cfg.App.URL != "" {
+		docs.SwaggerInfo.Host = cfg.App.URL
+	}
 
 	// Services
 	categoryService := service.NewCategoryService(categoryRepo)

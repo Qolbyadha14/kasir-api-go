@@ -16,6 +16,7 @@ type Config struct {
 type AppConfig struct {
 	Name string `mapstructure:"name"`
 	Port string `mapstructure:"port"`
+	URL  string `mapstructure:"url"`
 }
 
 type DatabaseConfig struct {
@@ -41,6 +42,7 @@ func LoadConfig() *Config {
 	// Set defaults from environment variables
 	v.SetDefault("app.name", v.GetString("APP_NAME"))
 	v.SetDefault("app.port", v.GetString("APP_PORT"))
+	v.SetDefault("app.url", v.GetString("APP_URL"))
 	v.SetDefault("database.url", v.GetString("DATABASE_URL"))
 	v.SetDefault("database.max_open_conns", v.GetInt("DATABASE_MAX_OPEN_CONNS"))
 	v.SetDefault("database.max_idle_conns", v.GetInt("DATABASE_MAX_IDLE_CONNS"))
