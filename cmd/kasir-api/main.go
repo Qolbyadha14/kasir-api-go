@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"kasir-api-go/docs"
@@ -52,9 +53,18 @@ func main() {
 	categoryRepo := repository.NewPostgresCategoryRepository(db)
 	productRepo := repository.NewPostgresProductRepository(db)
 
-	// Update swagger info host dynamically
+	// Update swagger info host and schemes dynamically
 	if cfg.App.URL != "" {
-		docs.SwaggerInfo.Host = cfg.App.URL
+		u, err := url.Parse(cfg.App.URL)
+		if err == nil && u.Host != "" {
+			docs.SwaggerInfo.Host = u.Host
+			if u.Scheme != "" {
+				docs.SwaggerInfo.Schemes = []string{u.Scheme}
+			}
+		} else {
+			// Fallback if URL is just the host
+			docs.SwaggerInfo.Host = cfg.App.URL
+		}
 	}
 
 	// Services
