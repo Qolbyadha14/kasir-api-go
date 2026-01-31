@@ -1,147 +1,123 @@
-# Kasir API Go (Sample Project)
+# Kasir API Go
 
-A minimalist Cashier API built with Go using only the standard library. This project is created for learning purposes and as a code sample.
+A minimalist Cashier API built with Go. This project demonstrates a layered architecture with PostgreSQL database integration.
 
 ## Features
 
 - Health check endpoint
 - CRUD operations for Products & Categories
 - Category existence validation for products
-- In-memory data storage (restarts reset data)
+- PostgreSQL database storage
 - Swagger API Documentation
-
-## API Documentation
-
-You can access the interactive API documentation (Swagger UI) when the server is running at:
-[http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
 
 ## Tech Stack
 
 - **Language:** Go
 - **Framework:** Standard Library (`net/http`)
+- **Database:** PostgreSQL
+- **Configuration:** Viper
+
+## Project Structure
+
+```
+kasir-api-go/
+├── cmd/kasir-api/          # Application entry point
+│   └── main.go
+├── internal/
+│   ├── config/             # Configuration loading
+│   ├── database/           # Database connection
+│   ├── handler/            # HTTP handlers
+│   ├── models/             # Data models
+│   ├── repository/         # Data access layer
+│   ├── service/            # Business logic
+│   └── utils/              # Utilities (responses, errors)
+├── migrations/             # SQL migrations
+├── docs/                   # Swagger documentation
+└── .env                    # Environment variables
+```
 
 ## Getting Started
 
 ### Prerequisites
 
-- Go 1.25.4 or later
+- Go 1.21 or later
+- PostgreSQL
+
+### Configuration
+
+Create a `.env` file in the project root:
+
+```env
+APP_NAME=kasir-api
+APP_PORT=8080
+DATABASE_URL=postgres://username:password@localhost:5432/kasir?sslmode=disable
+DATABASE_MAX_OPEN_CONNS=25
+DATABASE_MAX_IDLE_CONNS=25
+```
+
+### Database Setup
+
+1. Create the database:
+   ```bash
+   createdb kasir
+   ```
+
+2. Run migrations:
+   ```bash
+   psql kasir < migrations/001_create_tables.sql
+   ```
 
 ### Running Locally
 
-1. Clone the repository
-2. Run the application:
-   ```bash
-   go run main.go
-   ```
-3. The server will start on `http://localhost:8080`
+```bash
+go run cmd/kasir-api/main.go
+```
 
-### Development (Swagger)
+The server will start on `http://localhost:8080`
 
-To regenerate Swagger documentation after modifying handler annotations:
+## API Documentation
 
-1. Install `swag`:
-   ```bash
-   go install github.com/swaggo/swag/cmd/swag@latest
-   ```
-2. Ensure your Go bin directory is in your `PATH` (if `swag` command not found):
-   ```bash
-   # Add to PATH in .zshrc
-   echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.zshrc
-   # Reload configuration
-   source ~/.zshrc
-   ```
-3. Generate documentation:
-   ```bash
-   swag init
-   ```
+Interactive API documentation (Swagger UI) is available at:
+[http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
+
+### Regenerate Swagger Docs
+
+```bash
+# Install swag
+go install github.com/swaggo/swag/cmd/swag@latest
+
+# Generate docs
+swag init -g cmd/kasir-api/main.go
+```
 
 ## API Endpoints
 
 ### Health Check
-`GET /health`
-- **Response:** `200 OK`
-- **Body:** `{"status": "ok", "message": "API Running"}`
+`GET /health` - Returns API status
 
 ### Products
-
-#### Get All Products
-`GET /api/products`
-
-#### Get Product by ID
-`GET /api/products/{id}`
-
-#### Create Product
-`POST /api/products`
-- **Body:**
-  ```json
-  {
-    "id": 3,
-    "name": "New Product",
-    "price": 15000,
-    "stock": 50,
-    "category": {
-      "id": 1,
-      "name": "Food",
-      "description": "Edible items"
-    }
-  }
-  ```
-- **Note:** `category` is optional (can be `null` or omitted). If provided, the `id` must exist in the categories list.
-
-#### Update Product
-`PUT /api/products/{id}`
-- **Body:**
-  ```json
-  {
-    "name": "Updated Product",
-    "price": 12000,
-    "stock": 40
-  }
-  ```
-
-#### Delete Product
-`DELETE /api/products/{id}`
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/products` | Get all products |
+| GET | `/api/products/{id}` | Get product by ID |
+| POST | `/api/products` | Create product |
+| PUT | `/api/products/{id}` | Update product |
+| DELETE | `/api/products/{id}` | Delete product |
 
 ### Categories
-
-#### Get All Categories
-`GET /api/categories`
-
-#### Get Category by ID
-`GET /api/categories/{id}`
-
-#### Create Category
-`POST /api/categories`
-- **Body:**
-  ```json
-  {
-    "id": 1,
-    "name": "Food",
-    "description": "Edible items"
-  }
-  ```
-
-#### Update Category
-`PUT /api/categories/{id}`
-- **Body:**
-  ```json
-  {
-    "name": "Updated Category",
-    "description": "New description"
-  }
-  ```
-
-#### Delete Category
-`DELETE /api/categories/{id}`
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/categories` | Get all categories |
+| GET | `/api/categories/{id}` | Get category by ID |
+| POST | `/api/categories` | Create category |
+| PUT | `/api/categories/{id}` | Update category |
+| DELETE | `/api/categories/{id}` | Delete category |
 
 ## Deployment
 
 This project is prepared for deployment on [Railway](https://railway.app/). 
 
-### Step to Deploy:
-1. Connect your GitHub repository to Railway.
-2. Railway will automatically detect the Go environment and deploy it.
-3. Ensure the `PORT` environment variable is handled if necessary (currently hardcoded to `8080`, but Railway usually handles this).
+1. Connect your GitHub repository to Railway
+2. Set environment variables (DATABASE_URL, etc.)
+3. Railway will automatically detect and deploy
 
-> [!NOTE]
-> This is a sample project using in-memory storage. Data will be lost when the server restarts or redeploys.
