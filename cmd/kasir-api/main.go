@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"kasir-api-go/internal/config"
 	"kasir-api-go/internal/database"
 	"kasir-api-go/internal/handler"
 	"kasir-api-go/internal/repository"
@@ -12,7 +13,6 @@ import (
 
 	_ "kasir-api-go/docs"
 
-	"github.com/spf13/viper"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
@@ -31,27 +31,24 @@ import (
 // @host localhost:8080
 // @BasePath /
 func main() {
-	// Viper configuration
-	viper.SetConfigFile(".env")
-	viper.ReadInConfig()
-	viper.AutomaticEnv()
-
-	port := viper.GetString("PORT")
-	if port == "" {
-		port = "8080"
-	}
+	// Load configuration
+	cfg := config.GetConfig()
 
 	// Database initialization
-	if _, err := database.Init(); err != nil {
-		fmt.Println("Is database configured? Checking... ", err)
-	} else {
-		fmt.Println("Database configuration loaded.")
+	db, closeDB, err := database.NewPostgres(&cfg.Database)
+	if err != nil {
+		fmt.Println("Database connection failed:", err)
+		return
 	}
+	defer closeDB()
+	fmt.Println("Database connected successfully")
+
+	port := cfg.App.Port
 
 	// Dependency Injection
 	// Repositories
-	categoryRepo := repository.NewInMemoryCategoryRepository()
-	productRepo := repository.NewInMemoryProductRepository()
+	categoryRepo := repository.NewPostgresCategoryRepository(db)
+	productRepo := repository.NewPostgresProductRepository(db)
 
 	// Services
 	categoryService := service.NewCategoryService(categoryRepo)
@@ -129,7 +126,7 @@ func main() {
 	fmt.Printf("Starting server on http://localhost:%s\n", port)
 	fmt.Printf("Swagger documentation at http://localhost:%s/swagger/index.html\n", port)
 
-	err := http.ListenAndServe(":"+port, nil)
+	err = http.ListenAndServe(":"+port, nil)
 
 	if err != nil {
 		fmt.Println("error starting server:", err)

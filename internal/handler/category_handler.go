@@ -2,9 +2,9 @@ package handler
 
 import (
 	"encoding/json"
-	"kasir-api-go/internal/api"
 	"kasir-api-go/internal/models"
 	"kasir-api-go/internal/service"
+	"kasir-api-go/internal/utils"
 	"net/http"
 	"strconv"
 	"strings"
@@ -24,11 +24,11 @@ func NewCategoryHandler(service service.CategoryService) *CategoryHandler {
 // @Description Get a list of all categories
 // @Tags categories
 // @Produce json
-// @Success 200 {object} api.JSONResponse{data=[]models.Category}
+// @Success 200 {object} utils.JSONResponse{data=[]models.Category}
 // @Router /api/categories [get]
 func (h *CategoryHandler) GetCategories(w http.ResponseWriter, r *http.Request) {
 	categories := h.service.GetAll()
-	api.SuccessResponse(w, http.StatusOK, "Success", categories)
+	utils.SuccessResponse(w, http.StatusOK, "Success", categories)
 }
 
 // @Summary Create a new category
@@ -37,29 +37,29 @@ func (h *CategoryHandler) GetCategories(w http.ResponseWriter, r *http.Request) 
 // @Accept json
 // @Produce json
 // @Param category body models.Category true "Category object"
-// @Success 201 {object} api.JSONResponse{data=models.Category}
-// @Failure 400 {object} api.JSONResponse
-// @Failure 409 {object} api.JSONResponse
+// @Success 201 {object} utils.JSONResponse{data=models.Category}
+// @Failure 400 {object} utils.JSONResponse
+// @Failure 409 {object} utils.JSONResponse
 // @Router /api/categories [post]
 func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request) {
 	var category models.Category
 	if err := json.NewDecoder(r.Body).Decode(&category); err != nil {
-		api.ErrorResponse(w, http.StatusBadRequest, "Invalid request body", err.Error())
+		utils.ErrorResponse(w, http.StatusBadRequest, "Invalid request body", err.Error())
 		return
 	}
 
 	createdCategory, err := h.service.Create(category)
 	if err != nil && err.Error() == "category ID already exists" {
-		api.ErrorResponse(w, http.StatusConflict, err.Error(), "Duplicate ID")
+		utils.ErrorResponse(w, http.StatusConflict, err.Error(), "Duplicate ID")
 		return
 	}
 
 	if err != nil {
-		api.ErrorResponse(w, http.StatusBadRequest, err.Error(), "Bad Request")
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error(), "Bad Request")
 		return
 	}
 
-	api.SuccessResponse(w, http.StatusCreated, "Category created successfully", createdCategory)
+	utils.SuccessResponse(w, http.StatusCreated, "Category created successfully", createdCategory)
 }
 
 // @Summary Get a category detail
@@ -67,8 +67,8 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 // @Tags categories
 // @Produce json
 // @Param id path int true "Category ID"
-// @Success 200 {object} api.JSONResponse{data=models.Category}
-// @Failure 404 {object} api.JSONResponse
+// @Success 200 {object} utils.JSONResponse{data=models.Category}
+// @Failure 404 {object} utils.JSONResponse
 // @Router /api/categories/{id} [get]
 func (h *CategoryHandler) GetCategoryDetail(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
@@ -76,10 +76,10 @@ func (h *CategoryHandler) GetCategoryDetail(w http.ResponseWriter, r *http.Reque
 
 	category, err := h.service.GetByID(id)
 	if err != nil {
-		api.ErrorResponse(w, http.StatusNotFound, "Category not found", "Category not found")
+		utils.ErrorResponse(w, http.StatusNotFound, "Category not found", "Category not found")
 		return
 	}
-	api.SuccessResponse(w, http.StatusOK, "Success", category)
+	utils.SuccessResponse(w, http.StatusOK, "Success", category)
 }
 
 // @Summary Update a category
@@ -89,9 +89,9 @@ func (h *CategoryHandler) GetCategoryDetail(w http.ResponseWriter, r *http.Reque
 // @Produce json
 // @Param id path int true "Category ID"
 // @Param category body models.Category true "Category object"
-// @Success 200 {object} api.JSONResponse{data=models.Category}
-// @Failure 400 {object} api.JSONResponse
-// @Failure 404 {object} api.JSONResponse
+// @Success 200 {object} utils.JSONResponse{data=models.Category}
+// @Failure 400 {object} utils.JSONResponse
+// @Failure 404 {object} utils.JSONResponse
 // @Router /api/categories/{id} [put]
 func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
@@ -99,17 +99,17 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 
 	var category models.Category
 	if err := json.NewDecoder(r.Body).Decode(&category); err != nil {
-		api.ErrorResponse(w, http.StatusBadRequest, "Invalid request body", err.Error())
+		utils.ErrorResponse(w, http.StatusBadRequest, "Invalid request body", err.Error())
 		return
 	}
 
 	category.ID = id
 	updatedCategory, err := h.service.Update(id, category)
 	if err != nil {
-		api.ErrorResponse(w, http.StatusNotFound, "Category not found", "Category not found")
+		utils.ErrorResponse(w, http.StatusNotFound, "Category not found", "Category not found")
 		return
 	}
-	api.SuccessResponse(w, http.StatusOK, "Category updated successfully", updatedCategory)
+	utils.SuccessResponse(w, http.StatusOK, "Category updated successfully", updatedCategory)
 }
 
 // @Summary Delete a category
@@ -117,16 +117,16 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 // @Tags categories
 // @Produce json
 // @Param id path int true "Category ID"
-// @Success 200 {object} api.JSONResponse
-// @Failure 404 {object} api.JSONResponse
+// @Success 200 {object} utils.JSONResponse
+// @Failure 404 {object} utils.JSONResponse
 // @Router /api/categories/{id} [delete]
 func (h *CategoryHandler) DeleteCategory(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/api/categories/")
 	id, _ := strconv.Atoi(idStr)
 
 	if err := h.service.Delete(id); err != nil {
-		api.ErrorResponse(w, http.StatusNotFound, "Category not found", "Category not found")
+		utils.ErrorResponse(w, http.StatusNotFound, "Category not found", "Category not found")
 		return
 	}
-	api.SuccessResponse(w, http.StatusOK, "Category deleted successfully", nil)
+	utils.SuccessResponse(w, http.StatusOK, "Category deleted successfully", nil)
 }

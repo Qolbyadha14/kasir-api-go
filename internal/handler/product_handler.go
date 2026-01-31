@@ -2,9 +2,9 @@ package handler
 
 import (
 	"encoding/json"
-	"kasir-api-go/internal/api"
 	"kasir-api-go/internal/models"
 	"kasir-api-go/internal/service"
+	"kasir-api-go/internal/utils"
 	"net/http"
 	"strconv"
 	"strings"
@@ -24,11 +24,11 @@ func NewProductHandler(service service.ProductService) *ProductHandler {
 // @Description Get a list of all products
 // @Tags products
 // @Produce json
-// @Success 200 {object} api.JSONResponse{data=[]models.Product}
+// @Success 200 {object} utils.JSONResponse{data=[]models.Product}
 // @Router /api/products [get]
 func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
 	products := h.service.GetAll()
-	api.SuccessResponse(w, http.StatusOK, "Success", products)
+	utils.SuccessResponse(w, http.StatusOK, "Success", products)
 }
 
 // @Summary Create a new product
@@ -37,34 +37,34 @@ func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param product body models.Product true "Product object"
-// @Success 201 {object} api.JSONResponse{data=models.Product}
-// @Failure 400 {object} api.JSONResponse
-// @Failure 409 {object} api.JSONResponse
+// @Success 201 {object} utils.JSONResponse{data=models.Product}
+// @Failure 400 {object} utils.JSONResponse
+// @Failure 409 {object} utils.JSONResponse
 // @Router /api/products [post]
 func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	var product models.Product
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
-		api.ErrorResponse(w, http.StatusBadRequest, "Invalid request body", err.Error())
+		utils.ErrorResponse(w, http.StatusBadRequest, "Invalid request body", err.Error())
 		return
 	}
 
 	createdProduct, err := h.service.Create(product)
 	if err != nil && err.Error() == "product ID already exists" {
-		api.ErrorResponse(w, http.StatusConflict, err.Error(), "Duplicate ID")
+		utils.ErrorResponse(w, http.StatusConflict, err.Error(), "Duplicate ID")
 		return
 	}
 
 	if err != nil && err.Error() == "category not found" {
-		api.ErrorResponse(w, http.StatusBadRequest, err.Error(), "Invalid Category ID")
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error(), "Invalid Category ID")
 		return
 	}
 
 	if err != nil {
-		api.ErrorResponse(w, http.StatusBadRequest, err.Error(), "Bad Request")
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error(), "Bad Request")
 		return
 	}
 
-	api.SuccessResponse(w, http.StatusCreated, "Product created successfully", createdProduct)
+	utils.SuccessResponse(w, http.StatusCreated, "Product created successfully", createdProduct)
 }
 
 // @Summary Get a product detail
@@ -72,8 +72,8 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 // @Tags products
 // @Produce json
 // @Param id path int true "Product ID"
-// @Success 200 {object} api.JSONResponse{data=models.Product}
-// @Failure 404 {object} api.JSONResponse
+// @Success 200 {object} utils.JSONResponse{data=models.Product}
+// @Failure 404 {object} utils.JSONResponse
 // @Router /api/products/{id} [get]
 func (h *ProductHandler) GetProductDetail(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/api/products/")
@@ -81,10 +81,10 @@ func (h *ProductHandler) GetProductDetail(w http.ResponseWriter, r *http.Request
 
 	product, err := h.service.GetByID(id)
 	if err != nil {
-		api.ErrorResponse(w, http.StatusNotFound, "Product not found", "Product not found")
+		utils.ErrorResponse(w, http.StatusNotFound, "Product not found", "Product not found")
 		return
 	}
-	api.SuccessResponse(w, http.StatusOK, "Success", product)
+	utils.SuccessResponse(w, http.StatusOK, "Success", product)
 }
 
 // @Summary Update a product
@@ -94,9 +94,9 @@ func (h *ProductHandler) GetProductDetail(w http.ResponseWriter, r *http.Request
 // @Produce json
 // @Param id path int true "Product ID"
 // @Param product body models.Product true "Product object"
-// @Success 200 {object} api.JSONResponse{data=models.Product}
-// @Failure 400 {object} api.JSONResponse
-// @Failure 404 {object} api.JSONResponse
+// @Success 200 {object} utils.JSONResponse{data=models.Product}
+// @Failure 400 {object} utils.JSONResponse
+// @Failure 404 {object} utils.JSONResponse
 // @Router /api/products/{id} [put]
 func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/api/products/")
@@ -104,22 +104,22 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 
 	var product models.Product
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
-		api.ErrorResponse(w, http.StatusBadRequest, "Invalid request body", err.Error())
+		utils.ErrorResponse(w, http.StatusBadRequest, "Invalid request body", err.Error())
 		return
 	}
 
 	product.ID = id
 	updatedProduct, err := h.service.Update(id, product)
 	if err != nil && err.Error() == "category not found" {
-		api.ErrorResponse(w, http.StatusBadRequest, err.Error(), "Invalid Category ID")
+		utils.ErrorResponse(w, http.StatusBadRequest, err.Error(), "Invalid Category ID")
 		return
 	}
 
 	if err != nil {
-		api.ErrorResponse(w, http.StatusNotFound, "Product not found", "Product not found")
+		utils.ErrorResponse(w, http.StatusNotFound, "Product not found", "Product not found")
 		return
 	}
-	api.SuccessResponse(w, http.StatusOK, "Product updated successfully", updatedProduct)
+	utils.SuccessResponse(w, http.StatusOK, "Product updated successfully", updatedProduct)
 }
 
 // @Summary Delete a product
@@ -127,16 +127,16 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 // @Tags products
 // @Produce json
 // @Param id path int true "Product ID"
-// @Success 200 {object} api.JSONResponse
-// @Failure 404 {object} api.JSONResponse
+// @Success 200 {object} utils.JSONResponse
+// @Failure 404 {object} utils.JSONResponse
 // @Router /api/products/{id} [delete]
 func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/api/products/")
 	id, _ := strconv.Atoi(idStr)
 
 	if err := h.service.Delete(id); err != nil {
-		api.ErrorResponse(w, http.StatusNotFound, "Product not found", "Product not found")
+		utils.ErrorResponse(w, http.StatusNotFound, "Product not found", "Product not found")
 		return
 	}
-	api.SuccessResponse(w, http.StatusOK, "Product deleted successfully", nil)
+	utils.SuccessResponse(w, http.StatusOK, "Product deleted successfully", nil)
 }

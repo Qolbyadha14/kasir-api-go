@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  main.Category:
+  models.Category:
     properties:
       description:
         type: string
@@ -9,10 +9,10 @@ definitions:
       name:
         type: string
     type: object
-  main.Product:
+  models.Product:
     properties:
       category:
-        $ref: '#/definitions/main.Category'
+        $ref: '#/definitions/models.Category'
       id:
         type: integer
       name:
@@ -21,6 +21,16 @@ definitions:
         type: integer
       stock:
         type: integer
+    type: object
+  utils.JSONResponse:
+    properties:
+      data: {}
+      error:
+        type: string
+      message:
+        type: string
+      success:
+        type: boolean
     type: object
 host: localhost:8080
 info:
@@ -45,9 +55,14 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/main.Category'
-            type: array
+            allOf:
+            - $ref: '#/definitions/utils.JSONResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Category'
+                  type: array
+              type: object
       summary: List all categories
       tags:
       - categories
@@ -61,26 +76,27 @@ paths:
         name: category
         required: true
         schema:
-          $ref: '#/definitions/main.Category'
+          $ref: '#/definitions/models.Category'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/main.Category'
+            allOf:
+            - $ref: '#/definitions/utils.JSONResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Category'
+              type: object
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.JSONResponse'
         "409":
           description: Conflict
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.JSONResponse'
       summary: Create a new category
       tags:
       - categories
@@ -99,15 +115,11 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.JSONResponse'
         "404":
           description: Not Found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.JSONResponse'
       summary: Delete a category
       tags:
       - categories
@@ -125,13 +137,16 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.Category'
+            allOf:
+            - $ref: '#/definitions/utils.JSONResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Category'
+              type: object
         "404":
           description: Not Found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.JSONResponse'
       summary: Get a category detail
       tags:
       - categories
@@ -150,26 +165,27 @@ paths:
         name: category
         required: true
         schema:
-          $ref: '#/definitions/main.Category'
+          $ref: '#/definitions/models.Category'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.Category'
+            allOf:
+            - $ref: '#/definitions/utils.JSONResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Category'
+              type: object
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.JSONResponse'
         "404":
           description: Not Found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.JSONResponse'
       summary: Update a category
       tags:
       - categories
@@ -182,9 +198,14 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/main.Product'
-            type: array
+            allOf:
+            - $ref: '#/definitions/utils.JSONResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Product'
+                  type: array
+              type: object
       summary: List all products
       tags:
       - products
@@ -198,26 +219,27 @@ paths:
         name: product
         required: true
         schema:
-          $ref: '#/definitions/main.Product'
+          $ref: '#/definitions/models.Product'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/main.Product'
+            allOf:
+            - $ref: '#/definitions/utils.JSONResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Product'
+              type: object
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.JSONResponse'
         "409":
           description: Conflict
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.JSONResponse'
       summary: Create a new product
       tags:
       - products
@@ -236,15 +258,11 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.JSONResponse'
         "404":
           description: Not Found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.JSONResponse'
       summary: Delete a product
       tags:
       - products
@@ -262,13 +280,16 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.Product'
+            allOf:
+            - $ref: '#/definitions/utils.JSONResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Product'
+              type: object
         "404":
           description: Not Found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.JSONResponse'
       summary: Get a product detail
       tags:
       - products
@@ -287,26 +308,27 @@ paths:
         name: product
         required: true
         schema:
-          $ref: '#/definitions/main.Product'
+          $ref: '#/definitions/models.Product'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.Product'
+            allOf:
+            - $ref: '#/definitions/utils.JSONResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Product'
+              type: object
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.JSONResponse'
         "404":
           description: Not Found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.JSONResponse'
       summary: Update a product
       tags:
       - products
@@ -319,8 +341,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/utils.JSONResponse'
       summary: Health check
       tags:
       - health
