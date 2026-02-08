@@ -21,7 +21,7 @@ func NewTransactionHandler(service service.TransactionService) *TransactionHandl
 }
 
 // @Summary List all transactions
-// @Description Get a list of all transactions
+// @Description Get a list of all transactions including their details
 // @Tags transactions
 // @Produce json
 // @Success 200 {object} utils.JSONResponse{data=[]models.Transaction}

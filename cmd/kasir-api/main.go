@@ -13,8 +13,6 @@ import (
 	"kasir-api-go/internal/repository"
 	"kasir-api-go/internal/service"
 
-	_ "kasir-api-go/docs"
-
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
@@ -53,6 +51,7 @@ func main() {
 	categoryRepo := repository.NewPostgresCategoryRepository(db)
 	productRepo := repository.NewPostgresProductRepository(db)
 	transactionRepo := repository.NewPostgresTransactionRepository(db)
+	reportRepo := repository.NewPostgresReportRepository(db)
 
 	// Update swagger info host and schemes dynamically
 	if cfg.App.URL != "" {
@@ -72,11 +71,15 @@ func main() {
 	categoryService := service.NewCategoryService(categoryRepo)
 	productService := service.NewProductService(productRepo, categoryRepo)
 	transactionService := service.NewTransactionService(transactionRepo, productRepo)
+	reportService := service.NewReportService(reportRepo)
 
 	// Handlers
 	categoryHandler := handler.NewCategoryHandler(categoryService)
 	productHandler := handler.NewProductHandler(productService)
 	transactionHandler := handler.NewTransactionHandler(transactionService)
+	reportHandler := handler.NewReportHandler(reportService)
+
+	// Get localhost:8080/health
 
 	// Get localhost:8080/health
 	http.HandleFunc("/health", handler.HealthHandler)
@@ -154,6 +157,12 @@ func main() {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
 	})
+
+	// Handle /api/report/today (GET)
+	http.HandleFunc("/api/report/today", reportHandler.GetTodayReport)
+
+	// Handle /api/report (GET)
+	http.HandleFunc("/api/report", reportHandler.GetReportByRange)
 
 	// Serve static files from the "public" directory
 	// Assuming the app is run from the project root

@@ -1,5 +1,12 @@
 basePath: /
 definitions:
+  models.BestSellingProduct:
+    properties:
+      nama:
+        type: string
+      qty_terjual:
+        type: integer
+    type: object
   models.Category:
     properties:
       description:
@@ -34,6 +41,15 @@ definitions:
       price:
         type: integer
       stock:
+        type: integer
+    type: object
+  models.SalesReport:
+    properties:
+      produk_terlaris:
+        $ref: '#/definitions/models.BestSellingProduct'
+      total_revenue:
+        type: integer
+      total_transaksi:
         type: integer
     type: object
   models.Transaction:
@@ -265,7 +281,12 @@ paths:
       - transactions
   /api/products:
     get:
-      description: Get a list of all products
+      description: Get a list of all products, optionally filtered by name
+      parameters:
+      - description: Search products by name
+        in: query
+        name: search
+        type: string
       produces:
       - application/json
       responses:
@@ -406,9 +427,58 @@ paths:
       summary: Update a product
       tags:
       - products
+  /api/report:
+    get:
+      description: Get total revenue, total transactions, and best selling product
+        for a specific date range
+      parameters:
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: start_date
+        required: true
+        type: string
+      - description: End date (YYYY-MM-DD)
+        in: query
+        name: end_date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.JSONResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.SalesReport'
+              type: object
+      summary: Get sales report by date range
+      tags:
+      - report
+  /api/report/today:
+    get:
+      description: Get total revenue, total transactions, and best selling product
+        for today
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.JSONResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.SalesReport'
+              type: object
+      summary: Get sales report for today
+      tags:
+      - report
   /api/transactions:
     get:
-      description: Get a list of all transactions
+      description: Get a list of all transactions including their details
       produces:
       - application/json
       responses:
