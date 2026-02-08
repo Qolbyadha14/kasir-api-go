@@ -9,6 +9,20 @@ definitions:
       name:
         type: string
     type: object
+  models.CheckoutItem:
+    properties:
+      product_id:
+        type: integer
+      quantity:
+        type: integer
+    type: object
+  models.CheckoutRequest:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/models.CheckoutItem'
+        type: array
+    type: object
   models.Product:
     properties:
       category:
@@ -20,6 +34,36 @@ definitions:
       price:
         type: integer
       stock:
+        type: integer
+    type: object
+  models.Transaction:
+    properties:
+      created_at:
+        type: string
+      details:
+        items:
+          $ref: '#/definitions/models.TransactionDetail'
+        type: array
+      id:
+        type: integer
+      total_amount:
+        type: integer
+    type: object
+  models.TransactionDetail:
+    properties:
+      id:
+        type: integer
+      product:
+        $ref: '#/definitions/models.Product'
+      product_id:
+        type: integer
+      product_name:
+        type: string
+      quantity:
+        type: integer
+      subtotal:
+        type: integer
+      transaction_id:
         type: integer
     type: object
   utils.JSONResponse:
@@ -189,6 +233,36 @@ paths:
       summary: Update a category
       tags:
       - categories
+  /api/checkout:
+    post:
+      consumes:
+      - application/json
+      description: Create a new transaction from multiple items and update stock
+      parameters:
+      - description: Checkout Request object
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CheckoutRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Transaction'
+        "400":
+          description: Invalid request body
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Checkout transactions
+      tags:
+      - transactions
   /api/products:
     get:
       description: Get a list of all products
@@ -332,6 +406,54 @@ paths:
       summary: Update a product
       tags:
       - products
+  /api/transactions:
+    get:
+      description: Get a list of all transactions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.JSONResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Transaction'
+                  type: array
+              type: object
+      summary: List all transactions
+      tags:
+      - transactions
+  /api/transactions/{id}:
+    get:
+      description: Get details of a transaction by ID
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.JSONResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Transaction'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.JSONResponse'
+      summary: Get a transaction detail
+      tags:
+      - transactions
   /health:
     get:
       description: Get the status of the API

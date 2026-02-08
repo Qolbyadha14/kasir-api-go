@@ -52,6 +52,7 @@ func main() {
 	// Repositories
 	categoryRepo := repository.NewPostgresCategoryRepository(db)
 	productRepo := repository.NewPostgresProductRepository(db)
+	transactionRepo := repository.NewPostgresTransactionRepository(db)
 
 	// Update swagger info host and schemes dynamically
 	if cfg.App.URL != "" {
@@ -70,10 +71,12 @@ func main() {
 	// Services
 	categoryService := service.NewCategoryService(categoryRepo)
 	productService := service.NewProductService(productRepo, categoryRepo)
+	transactionService := service.NewTransactionService(transactionRepo, productRepo)
 
 	// Handlers
 	categoryHandler := handler.NewCategoryHandler(categoryService)
 	productHandler := handler.NewProductHandler(productService)
+	transactionHandler := handler.NewTransactionHandler(transactionService)
 
 	// Get localhost:8080/health
 	http.HandleFunc("/health", handler.HealthHandler)
@@ -127,6 +130,26 @@ func main() {
 			categoryHandler.UpdateCategory(w, r)
 		case http.MethodDelete:
 			categoryHandler.DeleteCategory(w, r)
+		default:
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		}
+	})
+
+	// Handle /api/transactions (GET)
+	http.HandleFunc("/api/transactions", transactionHandler.GetTransactions)
+
+	// Handle /api/checkout (POST)
+	http.HandleFunc("/api/checkout", transactionHandler.HandleCheckout)
+
+	// Handle /api/transactions/{id} (GET)
+	http.HandleFunc("/api/transactions/", func(w http.ResponseWriter, r *http.Request) {
+		idStr := strings.TrimPrefix(r.URL.Path, "/api/transactions/")
+		if idStr == "" {
+			return
+		}
+		switch r.Method {
+		case http.MethodGet:
+			transactionHandler.GetTransactionDetail(w, r)
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
