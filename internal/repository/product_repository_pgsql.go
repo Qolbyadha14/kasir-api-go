@@ -13,15 +13,20 @@ func NewPostgresProductRepository(db *sql.DB) *PostgresProductRepository {
 	return &PostgresProductRepository{db: db}
 }
 
-func (r *PostgresProductRepository) GetAll() []models.Product {
+func (r *PostgresProductRepository) GetAll(search string) []models.Product {
 	query := `
 		SELECT p.id, p.name, p.price, p.stock, c.id, c.name, c.description
 		FROM products p
 		LEFT JOIN categories c ON p.category_id = c.id
-		ORDER BY p.id
 	`
+	var args []interface{}
+	if search != "" {
+		query += " WHERE p.name ILIKE $1"
+		args = append(args, "%"+search+"%")
+	}
+	query += " ORDER BY p.id"
 
-	rows, err := r.db.Query(query)
+	rows, err := r.db.Query(query, args...)
 	if err != nil {
 		return []models.Product{}
 	}

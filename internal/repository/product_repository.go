@@ -1,9 +1,12 @@
 package repository
 
-import "kasir-api-go/internal/models"
+import (
+	"kasir-api-go/internal/models"
+	"strings"
+)
 
 type ProductRepository interface {
-	GetAll() []models.Product
+	GetAll(search string) []models.Product
 	GetByID(id int) (models.Product, bool)
 	Create(product models.Product)
 	Update(id int, product models.Product) bool
@@ -39,8 +42,19 @@ func NewInMemoryProductRepository() *InMemoryProductRepository {
 	}
 }
 
-func (r *InMemoryProductRepository) GetAll() []models.Product {
-	return r.products
+func (r *InMemoryProductRepository) GetAll(search string) []models.Product {
+	if search == "" {
+		return r.products
+	}
+
+	search = strings.ToLower(search)
+	var filtered []models.Product
+	for _, p := range r.products {
+		if strings.Contains(strings.ToLower(p.Name), search) {
+			filtered = append(filtered, p)
+		}
+	}
+	return filtered
 }
 
 func (r *InMemoryProductRepository) GetByID(id int) (models.Product, bool) {

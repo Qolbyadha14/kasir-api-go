@@ -7,7 +7,7 @@ import (
 )
 
 type ProductService interface {
-	GetAll() []models.Product
+	GetAll(search string) []models.Product
 	GetByID(id int) (models.Product, error)
 	Create(product models.Product) (models.Product, error)
 	Update(id int, product models.Product) (models.Product, error)
@@ -26,8 +26,8 @@ func NewProductService(productRepo repository.ProductRepository, categoryRepo re
 	}
 }
 
-func (s *productService) GetAll() []models.Product {
-	return s.productRepo.GetAll()
+func (s *productService) GetAll(search string) []models.Product {
+	return s.productRepo.GetAll(search)
 }
 
 func (s *productService) GetByID(id int) (models.Product, error) {

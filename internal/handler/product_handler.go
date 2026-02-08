@@ -21,13 +21,15 @@ func NewProductHandler(service service.ProductService) *ProductHandler {
 }
 
 // @Summary List all products
-// @Description Get a list of all products
+// @Description Get a list of all products, optionally filtered by name
 // @Tags products
 // @Produce json
+// @Param search query string false "Search products by name"
 // @Success 200 {object} utils.JSONResponse{data=[]models.Product}
 // @Router /api/products [get]
 func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
-	products := h.service.GetAll()
+	search := r.URL.Query().Get("search")
+	products := h.service.GetAll(search)
 	utils.SuccessResponse(w, http.StatusOK, "Success", products)
 }
 
